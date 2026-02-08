@@ -1,5 +1,5 @@
 import express from "express";
-import requireAuth from "../middleware/requireAuth.js";
+import {requireAuth} from "../middleware/requireAuth.js";
 import pool from "../config/db.js";
 import { generateApiKey, hashApiKey } from "../utils/crypto.js";
 

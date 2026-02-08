@@ -10,7 +10,7 @@ router.post("/signup", async (req, res) => {
 
   // 1. basic validation
   if (!email || !password) {
-    return res.status(400).json({ error: "email and password required" });
+    return res.status(400).json({ error: "Email and Password Required" });
   }
 
   try {
@@ -25,7 +25,6 @@ router.post("/signup", async (req, res) => {
       [email, passwordHash]
     );
 
-    console.log(result)
     // 4. success
     res.status(201).json({
       user: result.rows[0],
@@ -33,11 +32,11 @@ router.post("/signup", async (req, res) => {
   } catch (err) {
     // 5. duplicate email
     if (err.code === "23505") {
-      return res.status(409).json({ error: "email already exists" });
+      return res.status(409).json({ error: "Email Already Exists" });
     }
 
     console.error(err);
-    res.status(500).json({ error: "internal server error" });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
@@ -45,7 +44,7 @@ router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({ error: "email and password required" });
+    return res.status(400).json({ error: "Email and Password required" });
   }
 
   try {
@@ -57,7 +56,7 @@ router.post("/login", async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(401).json({ error: "invalid credentials" });
+      return res.status(401).json({ error: "Invalid Credentials" });
     }
 
     const user = result.rows[0];
@@ -65,7 +64,7 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password_hash);
 
     if (!isMatch) {
-      return res.status(401).json({ error: "invalid credentials" });
+      return res.status(401).json({ error: "Invalid Credentials" });
     }
 
     const token = jwt.sign(
@@ -83,7 +82,7 @@ router.post("/login", async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "internal server error" });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
