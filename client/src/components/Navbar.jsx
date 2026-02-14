@@ -24,8 +24,8 @@ function Navbar({ setToken }) {
     <>
       <div className="mobile-header">
         <div className="brand-logo">
-          <div className="logo-box">A</div>
-          <h2>Gateway<span>.ai</span></h2>
+          <div className="logo-box">AI</div>
+          <h2>AI API <span>Gateway</span></h2>
         </div>
         <button className="menu-toggle" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? "✕" : "☰"}
@@ -35,8 +35,8 @@ function Navbar({ setToken }) {
       <aside className={`app-sidebar ${isOpen ? "open" : ""}`}>
         <div className="sidebar-header desktop-only">
           <div className="brand-logo">
-            <div className="logo-box">A</div>
-            <h2>Gateway<span>.ai</span></h2>
+            <div className="logo-box">AI</div>
+            <h2>AI API <span>Gateway</span></h2>
           </div>
         </div>
 
@@ -58,7 +58,7 @@ function Navbar({ setToken }) {
           <div className="user-profile">
             <div className={`auth-dot ${token ? "auth-on" : "auth-off"}`} />
             <div className="user-details">
-              <span className="user-status-label">Session Status</span>
+              <span className="user-status-label">Session Status: </span>
               <span className={`user-status-text ${token ? "txt-auth" : "txt-unauth"}`}>
                 {token ? "Authorized" : "Unauthorized"}
               </span>
