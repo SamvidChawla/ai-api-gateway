@@ -163,4 +163,32 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
+// Get all logs for the user’s subkeys
+router.get("/logs", async (req, res) => {
+  try {
+    const result = await pool.query(
+      `
+      SELECT 
+        l.id,
+        l.api_key_id,
+        k.name AS subkey_name,
+        l.event_type,
+        u.email AS performed_by_email,
+        l.timestamp
+      FROM api_key_logs l
+      JOIN api_keys k ON l.api_key_id = k.id
+      JOIN users u ON l.performed_by = u.id
+      WHERE k.user_id = $1
+      ORDER BY l.timestamp DESC
+      `,
+      [req.user.userId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 export default router;
