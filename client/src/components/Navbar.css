@@ -9,7 +9,7 @@
   position: fixed;
   left: 0;
   top: 0;
-  z-index: 2000;
+  z-index: 2100;
   padding: 32px 16px;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -161,7 +161,7 @@
   border-bottom: 1px solid #1f1f22;
   position: sticky;
   top: 0;
-  z-index: 2100;
+  z-index: 2000;
 }
 
 .menu-toggle {
@@ -180,5 +180,5 @@
   .app-sidebar.open { transform: translateX(0); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
   .mobile-header { display: flex; }
   .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1900; }
-  .desktop-only { display: none; }
+  .desktop-only { display: hidden; }
 }

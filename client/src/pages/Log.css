@@ -1,57 +1,85 @@
 .log-container {
-  padding: 30px;
+  padding: 40px;
   background-color: #0b0b0d;
   min-height: 100vh;
 }
 
-/* PC Side Margin Fix */
 @media (min-width: 769px) {
-  .log-container {
-    margin-left: 260px;
-  }
+  .log-container { margin-left: 260px; }
 }
 
 .log-card {
   background: #161618;
   border: 1px solid #2a2a2d;
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.log-header {
+  padding: 24px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .log-table-wrapper {
-  overflow-x: auto;
-  margin-top: 20px;
+  width: 100%;
+  overflow-x: auto; /* Allows side-scrolling on tiny screens */
+  -webkit-overflow-scrolling: touch;
 }
 
 .log-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 600px; 
 }
 
 .log-table th {
+  background: #1c1c1e;
+  padding: 16px 24px;
   text-align: left;
-  padding: 12px;
-  border-bottom: 1px solid #2a2a2d;
-  color: #a0a0a5;
-  font-size: 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #666;
+  letter-spacing: 1px;
 }
 
 .log-table td {
-  padding: 14px 12px;
+  padding: 16px 24px;
   border-bottom: 1px solid #1f1f22;
-  font-size: 14px;
-  color: #fff;
+  font-size: 13px;
+  color: #eee;
+  white-space: nowrap; 
 }
 
-/* Event Tags */
+.btn-refresh{
+  background: #ffcc00;
+  color: #000;
+  border: none;
+  font-weight: 800;
+  padding: 8px 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
 .event-tag {
   padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 700;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
   text-transform: uppercase;
 }
 
 .tag-created { background: rgba(0, 255, 127, 0.1); color: #00ff7f; }
 .tag-revoked { background: rgba(255, 68, 68, 0.1); color: #ff4444; }
 .tag-updated { background: rgba(0, 123, 255, 0.1); color: #007bff; }
+
+@media (max-width: 600px) {
+  .log-container { padding: 15px; }
+  .log-header { padding: 20px; }
+  .log-table td, .log-table th {
+    padding: 12px 15px;
+    font-size: 12px;
+  }
+}

@@ -8,7 +8,7 @@ function Landing() {
     <div className="auth-wrapper">
       <div className="hero-content">
         <h1>AI API <span>Gateway</span></h1>
-        <p>Manage your AI API keys. Control limits , Access , Monitor Stats</p>
+        <p>Manage your AI API keys. Control Limits & Access , Monitor Stats & Logs</p>
         
         <div className="btn-group">
           <button className="btn-primary" onClick={() => navigate("/login")}>
