@@ -52,7 +52,7 @@
 
 .input-row input {
   flex: 1;
-  background: #000000;
+  background: #000;
   border: 1px solid #2a2a2d;
   padding: 12px;
   border-radius: 6px;
@@ -64,26 +64,53 @@
   border-color: #ffcc00;
 }
 
-/* New Key Alert */
+/* New Key Box & Copy Logic */
 .new-key-box {
-  background: rgba(255, 204, 0, 0.1);
+  background: rgba(255, 204, 0, 0.05);
   border: 1px dashed #ffcc00;
   padding: 16px;
   border-radius: 6px;
   margin-top: 16px;
 }
 
+.new-key-box p {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+}
+
+.key-row {
+  display: flex;
+  gap: 10px;
+}
+
 .new-key-box code {
-  display: block;
+  flex: 1;
   background: #000;
-  padding: 10px;
-  margin-top: 8px;
+  padding: 12px;
   color: #ffcc00;
   word-break: break-all;
   border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
 }
 
-/* Table / List Styling */
+.btn-copy {
+  background: #ffcc00;
+  color: #000;
+  border: none;
+  padding: 0 20px;
+  border-radius: 4px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+  white-space: nowrap;
+}
+
+.btn-copy.copied {
+  background: #00ff7f;
+}
+
+/* List Styling */
 .keys-list {
   background: #161618;
   border-radius: 8px;
@@ -91,11 +118,38 @@
   overflow: hidden;
 }
 
-.keys-list h2 {
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 20px;
+  border-bottom: 1px solid #2a2a2d;
+}
+
+.list-header h2 {
   margin: 0;
   font-size: 18px;
-  border-bottom: 1px solid #2a2a2d;
+}
+
+.search-bar {
+  background: #000;
+  border: 1px solid #2a2a2d;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 200px;
+  outline: none;
+}
+
+.search-bar:focus {
+  border-color: #ffcc00;
+}
+
+.empty-msg {
+  padding: 40px;
+  text-align: center;
+  color: #666;
 }
 
 .key-item {
@@ -104,21 +158,52 @@
   align-items: center;
   padding: 16px 20px;
   border-bottom: 1px solid #2a2a2d;
+  gap: 20px;
 }
 
 .key-item:last-child {
   border-bottom: none;
 }
 
-.key-info {
+.key-main-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+  min-width: 0; 
+  flex: 1;
+}
+
+.key-info-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.key-name {
+  font-weight: 600;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #fff;
+}
+
+.key-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: #a0a0a5;
+}
+
+.key-stats b {
+  color: #fff;
 }
 
 .status-tag {
-  font-size: 11px;
-  font-weight: 700;
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 800;
   padding: 2px 8px;
   border-radius: 4px;
   text-transform: uppercase;
@@ -148,6 +233,7 @@
 }
 
 .btn-revoke {
+  flex-shrink: 0;
   background: transparent;
   border: 1px solid #ff4444;
   color: #ff4444;
@@ -155,6 +241,7 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
+  transition: 0.2s;
 }
 
 .btn-revoke:hover {
