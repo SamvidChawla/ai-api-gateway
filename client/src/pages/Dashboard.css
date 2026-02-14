@@ -1,250 +1,139 @@
-.dashboard-container {
-  min-height: 100vh;
+.dashboard-page {
+  padding: 30px;
   background-color: #0b0b0d;
-  color: #ffffff;
-  font-family: 'Inter', -apple-system, sans-serif;
-  padding: 40px 20px;
+  min-height: 100vh;
 }
 
-.dashboard-content {
-  max-width: 900px;
-  margin: 0 auto;
+/* PC Side Margin Fix */
+@media (min-width: 769px) {
+  .dashboard-page {
+    margin-left: 260px;
+  }
 }
 
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 40px;
-  border-bottom: 1px solid #2a2a2d;
-  padding-bottom: 20px;
-}
-
-.dashboard-header h1 {
-  margin: 0;
-  font-size: 28px;
-}
-
-.dashboard-header h1 span {
-  color: #ffcc00;
-}
-
-/* Create Section */
-.create-section {
+/* Creation Block */
+.create-card {
   background: #161618;
+  border: 1px solid #2a2a2d;
+  border-radius: 12px;
   padding: 24px;
-  border-radius: 8px;
-  border: 1px solid #2a2a2d;
-  margin-bottom: 32px;
+  margin-bottom: 30px;
 }
 
-.create-section h2 {
-  font-size: 18px;
-  margin-top: 0;
-  margin-bottom: 16px;
-  color: #ffcc00;
-}
-
-.input-row {
+.create-form-grid {
   display: flex;
-  gap: 12px;
+  gap: 15px;
+  align-items: flex-end;
+  flex-wrap: wrap;
 }
 
-.input-row input {
+.input-box {
   flex: 1;
-  background: #000;
-  border: 1px solid #2a2a2d;
-  padding: 12px;
-  border-radius: 6px;
-  color: #fff;
-  outline: none;
-}
-
-.input-row input:focus {
-  border-color: #ffcc00;
-}
-
-/* New Key Box & Copy Logic */
-.new-key-box {
-  background: rgba(255, 204, 0, 0.05);
-  border: 1px dashed #ffcc00;
-  padding: 16px;
-  border-radius: 6px;
-  margin-top: 16px;
-}
-
-.new-key-box p {
-  margin: 0 0 10px 0;
-  font-size: 13px;
-}
-
-.key-row {
-  display: flex;
-  gap: 10px;
-}
-
-.new-key-box code {
-  flex: 1;
-  background: #000;
-  padding: 12px;
-  color: #ffcc00;
-  word-break: break-all;
-  border-radius: 4px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
-}
-
-.btn-copy {
-  background: #ffcc00;
-  color: #000;
-  border: none;
-  padding: 0 20px;
-  border-radius: 4px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.2s;
-  white-space: nowrap;
-}
-
-.btn-copy.copied {
-  background: #00ff7f;
-}
-
-/* List Styling */
-.keys-list {
-  background: #161618;
-  border-radius: 8px;
-  border: 1px solid #2a2a2d;
-  overflow: hidden;
-}
-
-.list-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #2a2a2d;
-}
-
-.list-header h2 {
-  margin: 0;
-  font-size: 18px;
-}
-
-.search-bar {
-  background: #000;
-  border: 1px solid #2a2a2d;
-  color: #fff;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  width: 200px;
-  outline: none;
-}
-
-.search-bar:focus {
-  border-color: #ffcc00;
-}
-
-.empty-msg {
-  padding: 40px;
-  text-align: center;
-  color: #666;
-}
-
-.key-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #2a2a2d;
-  gap: 20px;
-}
-
-.key-item:last-child {
-  border-bottom: none;
-}
-
-.key-main-info {
+  min-width: 200px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-width: 0; 
-  flex: 1;
 }
 
-.key-info-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-
-.key-name {
-  font-weight: 600;
-  font-size: 16px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: #fff;
-}
-
-.key-stats {
-  display: flex;
-  gap: 16px;
-  font-size: 12px;
-  color: #a0a0a5;
-}
-
-.key-stats b {
-  color: #fff;
-}
-
-.status-tag {
-  flex-shrink: 0;
-  font-size: 10px;
-  font-weight: 800;
-  padding: 2px 8px;
-  border-radius: 4px;
-  text-transform: uppercase;
-}
-
-.status-active { background: rgba(0, 255, 127, 0.1); color: #00ff7f; }
-.status-revoked { background: rgba(255, 68, 68, 0.1); color: #ff4444; }
-
-/* Buttons */
-.btn-logout {
-  background: transparent;
+.input-box input {
+  background: #000;
   border: 1px solid #2a2a2d;
-  color: #a0a0a5;
-  padding: 8px 16px;
+  color: #fff;
+  padding: 12px;
   border-radius: 6px;
-  cursor: pointer;
+  outline: none;
 }
 
 .btn-create {
   background: #ffcc00;
   color: #000;
   border: none;
-  padding: 12px 24px;
+  font-weight: 800;
+  padding: 12px 25px;
   border-radius: 6px;
-  font-weight: 700;
   cursor: pointer;
+  height: 43px;
 }
 
-.btn-revoke {
-  flex-shrink: 0;
+/* Key Reveal UI */
+.secret-alert {
+  margin-top: 20px;
+  background: rgba(255, 204, 0, 0.05);
+  border: 1px dashed #ffcc00;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.copy-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.copy-row code {
+  flex: 1;
+  background: #000;
+  padding: 10px;
+  color: #ffcc00;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Key Tiles Grid */
+.keys-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.key-card {
+  background: #1c1c1e;
+  border: 1px solid #2a2a2d;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.revoked-card {
+  opacity: 0.5;
+}
+
+.status-pill {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.status-pill.active { background: rgba(0, 255, 127, 0.1); color: #00ff7f; }
+.status-pill.revoked { background: rgba(255, 68, 68, 0.1); color: #ff4444; }
+
+/* Progress Bar */
+.progress-track {
+  height: 4px;
+  background: #000;
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.btn-revoke-inline {
+  width: 100%;
   background: transparent;
   border: 1px solid #ff4444;
   color: #ff4444;
-  padding: 6px 12px;
-  border-radius: 4px;
+  padding: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 12px;
-  transition: 0.2s;
+  margin-top: 15px;
 }
 
-.btn-revoke:hover {
-  background: #ff4444;
-  color: #fff;
+@media (max-width: 768px) {
+  .dashboard-page { padding: 15px; }
+  .create-form-grid { flex-direction: column; align-items: stretch; }
 }

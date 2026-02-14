@@ -1,0 +1,57 @@
+.log-container {
+  padding: 30px;
+  background-color: #0b0b0d;
+  min-height: 100vh;
+}
+
+/* PC Side Margin Fix */
+@media (min-width: 769px) {
+  .log-container {
+    margin-left: 260px;
+  }
+}
+
+.log-card {
+  background: #161618;
+  border: 1px solid #2a2a2d;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.log-table-wrapper {
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.log-table th {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 1px solid #2a2a2d;
+  color: #a0a0a5;
+  font-size: 12px;
+}
+
+.log-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #1f1f22;
+  font-size: 14px;
+  color: #fff;
+}
+
+/* Event Tags */
+.event-tag {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.tag-created { background: rgba(0, 255, 127, 0.1); color: #00ff7f; }
+.tag-revoked { background: rgba(255, 68, 68, 0.1); color: #ff4444; }
+.tag-updated { background: rgba(0, 123, 255, 0.1); color: #007bff; }

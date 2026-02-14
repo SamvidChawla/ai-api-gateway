@@ -4,197 +4,113 @@ import "./Dashboard.css";
 function Dashboard({ setToken }) {
   const [subkeys, setSubkeys] = useState([]);
   const [name, setName] = useState("");
+  const [tokenLimit, setTokenLimit] = useState(0);
   const [newKey, setNewKey] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [hideRevoked, setHideRevoked] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState("");
   const token = localStorage.getItem("token");
 
-  // --- Auth & Logout Logic ---
+  const loadSubkeys = useCallback(async () => {
+    try {
+      const res = await fetch("http://localhost:3000/subkeys", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.status === 401) return setToken(null);
+      const data = await res.json();
+      setSubkeys(data);
+    } catch (err) { console.error(err); }
+  }, [token, setToken]);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem("token");
-    setToken(null);
-  }, [setToken]);
-
-  // Centralized status checker for all API calls
-  const checkStatus = useCallback((res) => {
-    if (res.status === 401 || res.status === 403) {
-      logout();
-      return false;
-    }
-    return true;
-  }, [logout]);
-
-  // Initial Guard: If no token exists, log out immediately
-  useEffect(() => {
-    if (!token) {
-      logout();
-    }
-  }, [token, logout]);
-
-  // --- API Actions ---
-
-  useEffect(() => {
-    async function loadSubkeys() {
-      if (!token) return;
-      try {
-        const res = await fetch("http://localhost:3000/subkeys", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!checkStatus(res)) return;
-
-        const data = await res.json();
-        setSubkeys(data);
-      } catch (err) {
-        console.error("Error loading keys:", err);
-      }
-    }
-    loadSubkeys();
-  }, [token, checkStatus]);
+  useEffect(() => { loadSubkeys(); }, [loadSubkeys]);
 
   async function createSubkey() {
-    if (!name) return;
-    setNewKey(null);
+    setError(""); setNewKey(null);
+    if (!name.trim()) return setError("Name is required");
 
     try {
       const res = await fetch("http://localhost:3000/subkeys", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ name }),
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name, token_limit: Number(tokenLimit) }),
       });
-
-      if (!checkStatus(res)) return;
-
       const data = await res.json();
-      setNewKey(data.subkey);
-      
-      // Update local list: Backend returns full key object (excluding raw key)
-      const { subkey, ...keyData } = data;
-      setSubkeys(prev => [...prev, keyData]);
-      setName("");
-    } catch (err) {
-      console.error("Create failed:", err);
-    }
+      if (!res.ok) return setError(data.error);
+
+      setNewKey(data.subkey); setName(""); setTokenLimit(0); loadSubkeys();
+    } catch (err) { setError("Server error"); }
   }
 
-  async function revokeSubkey(id) {
-    if (!window.confirm("Are you sure you want to revoke this key? This cannot be undone.")) return;
-    
-    try {
-      const res = await fetch(`http://localhost:3000/subkeys/${id}/revoke`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  const formatIST = (date) => new Date(date).toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", hour12: true
+  });
 
-      if (!checkStatus(res)) return;
-
-      setSubkeys(keys =>
-        keys.map(k => (k.id === id ? { ...k, revoked: true } : k))
-      );
-    } catch (err) {
-      console.error("Revoke failed:", err);
-    }
-  }
-
-  // --- UI Helpers ---
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(newKey);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy!", err);
-    }
-  };
-
-  const filteredKeys = subkeys.filter(k => 
-    (k.name || "Unnamed").toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredKeys = subkeys.filter(k => {
+    const matches = (k.name || "").toLowerCase().includes(searchTerm.toLowerCase());
+    return hideRevoked ? matches && !k.revoked : matches;
+  });
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-content">
-        <header className="dashboard-header">
-          <h1>AI API <span>Gateway</span></h1>
-          <button className="btn-logout" onClick={logout}>Logout</button>
-        </header>
-
-        <section className="create-section">
-          <h2>Create Subkey</h2>
-          <div className="input-row">
-            <input
-              placeholder="Key name (e.g. Analytics-App)"
-              value={name}
-              onChange={e => setName(e.target.value)}
-            />
-            <button className="btn-create" onClick={createSubkey}>Create</button>
+    <div className="dashboard-page">
+      <section className="create-card">
+        <div className="card-header">
+          <h3>Create Subkey <span>({subkeys.filter(k=>!k.revoked).length}/10 Active)</span></h3>
+        </div>
+        <div className="create-form-grid">
+          <div className="input-box">
+            <label>Name</label>
+            <input placeholder="Key Name" value={name} onChange={e => setName(e.target.value)} />
           </div>
+          <div className="input-box">
+            <label>Token Limit (0 = ∞)</label>
+            <input type="number" value={tokenLimit} onChange={e => setTokenLimit(e.target.value)} />
+          </div>
+          <button className="btn-create" onClick={createSubkey} disabled={subkeys.filter(k=>!k.revoked).length >= 10}>Create</button>
+        </div>
+        {error && <p className="error-msg" style={{color: '#ff4444', marginTop: '10px'}}>{error}</p>}
 
-          {newKey && (
-            <div className="new-key-box">
-              <p><b>Copy this key (It's only shown once):</b></p>
-              <div className="key-row">
-                <code>{newKey}</code>
-                <button 
-                  className={`btn-copy ${copied ? 'copied' : ''}`} 
-                  onClick={handleCopy}
-                >
-                  {copied ? "Copied!" : "Copy"}
-                </button>
-              </div>
+        {newKey && (
+          <div className="secret-alert">
+            <p><b>One-time Secret:</b> Copy this now.</p>
+            <div className="copy-row">
+              <code>{newKey}</code>
+              <button onClick={() => {navigator.clipboard.writeText(newKey); setCopied(true); setTimeout(()=>setCopied(false), 2000)}} className={copied ? "copied" : ""}>
+                {copied ? "Copied!" : "Copy"}
+              </button>
             </div>
-          )}
-        </section>
-
-        <section className="keys-list">
-          <div className="list-header">
-            <h2>Your Subkeys</h2>
-            <input 
-              className="search-bar"
-              placeholder="Search keys..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
           </div>
+        )}
+      </section>
 
-          {filteredKeys.length === 0 ? (
-            <p className="empty-msg">
-              {searchTerm ? "No keys match your search." : "No subkeys found. Create one above to get started."}
-            </p>
-          ) : (
-            filteredKeys.map(k => (
-              <div key={k.id} className="key-item">
-                <div className="key-main-info">
-                  <div className="key-info-header">
-                    <span className="key-name" title={k.name}>
-                      {k.name || "Unnamed Key"}
-                    </span>
-                    <span className={`status-tag ${k.revoked ? 'status-revoked' : 'status-active'}`}>
-                      {k.revoked ? "Revoked" : "Active"}
-                    </span>
+      <section className="list-card">
+        <div className="list-controls">
+          <input className="search-input" placeholder="Search keys..." onChange={e => setSearchTerm(e.target.value)} />
+          <button className={`btn-toggle ${hideRevoked ? "active" : ""}`} onClick={() => setHideRevoked(!hideRevoked)}>
+            {hideRevoked ? "Active Only" : "Hide Revoked"}
+          </button>
+        </div>
+        <div className="keys-grid">
+          {filteredKeys.map(k => (
+            <div key={k.id} className={`key-card ${k.revoked ? "revoked-card" : ""}`}>
+              <div className="key-header">
+                <h4 title={k.name}>{k.name || "Unnamed"}</h4>
+                <span className={`status-pill ${k.revoked ? "revoked" : "active"}`}>{k.revoked ? "Revoked" : "Active"}</span>
+              </div>
+              <div className="usage-wrapper">
+                <p style={{fontSize: '13px', color: '#a0a0a5'}}>Tokens: <b>{k.tokens_used}</b> / {k.token_limit || "∞"}</p>
+                {k.token_limit > 0 && (
+                  <div className="progress-track">
+                    <div className="progress-fill" style={{ width: `${Math.min((k.tokens_used/k.token_limit)*100, 100)}%`, background: '#ffcc00' }} />
                   </div>
-                  <div className="key-stats">
-                    <span>Usage: <b>{k.usage_count || 0}</b></span>
-                    <span>Limit: <b>{k.token_limit || "None"}</b></span>
-                    <span>Created: <b>{new Date(k.created_at).toLocaleDateString('en-GB')}</b></span>
-                  </div>
-                </div>
-
-                {!k.revoked && (
-                  <button className="btn-revoke" onClick={() => revokeSubkey(k.id)}>
-                    Revoke
-                  </button>
                 )}
               </div>
-            ))
-          )}
-        </section>
-      </div>
+              <p style={{fontSize: '11px', color: '#666'}}>Resets (IST): {formatIST(k.reset_at)}</p>
+              {!k.revoked && <button className="btn-revoke-inline" onClick={async () => { if(window.confirm("Revoke?")) { await fetch(`http://localhost:3000/subkeys/${k.id}/revoke`, { method: "PATCH", headers: { Authorization: `Bearer ${token}` }}); loadSubkeys(); } }}>Revoke</button>}
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
