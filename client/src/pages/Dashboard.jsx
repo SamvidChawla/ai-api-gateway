@@ -10,6 +10,7 @@ function Dashboard({ setToken }) {
   const [hideRevoked, setHideRevoked] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
+  const [masterKeyConfigured, setMasterKeyConfigured] = useState(false);
   const token = localStorage.getItem("token");
 
   const loadSubkeys = useCallback(async () => {
@@ -23,7 +24,23 @@ function Dashboard({ setToken }) {
     } catch (err) { console.error(err); }
   }, [token, setToken]);
 
-  useEffect(() => { loadSubkeys(); }, [loadSubkeys]);
+  const checkMasterKeyStatus = useCallback(async () => {
+    try {
+      const res = await fetch("http://localhost:3000/realkey", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMasterKeyConfigured(data.configured);
+      }
+    } catch (err) { console.error(err); }
+  }, [token]);
+
+  // Load both subkeys and master key status on mount
+  useEffect(() => { 
+    loadSubkeys(); 
+    checkMasterKeyStatus();
+  }, [loadSubkeys, checkMasterKeyStatus]);
 
   async function createSubkey() {
     setError(""); setNewKey(null);
@@ -68,6 +85,7 @@ function Dashboard({ setToken }) {
       const data = await res.json();
       if (res.ok) {
         alert("Master key successfully saved!");
+        setMasterKeyConfigured(true);
       } else {
         alert(data.error || "Failed to save key.");
       }
@@ -87,12 +105,33 @@ function Dashboard({ setToken }) {
       });
       if (res.ok) {
         alert("Master key successfully removed.");
+        setMasterKeyConfigured(false);
       } else {
         alert("Failed to remove key.");
       }
     } catch (err) { 
       console.error(err);
       alert("Server error while removing key."); 
+    }
+  }
+
+  async function handleDeleteSubkey(id) {
+    if (!window.confirm("Are you sure you want to permanently delete this subkey? This action cannot be undone.")) return;
+
+    try {
+      const res = await fetch(`http://localhost:3000/subkeys/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        loadSubkeys();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to delete subkey.");
+      }
+    } catch (err) { 
+      console.error(err);
+      alert("Server error while deleting subkey."); 
     }
   }
 
@@ -145,8 +184,15 @@ function Dashboard({ setToken }) {
         <div className="list-controls">
           <input className="search-input" placeholder="Search by name..." onChange={e => setSearchTerm(e.target.value)} />
           <div className="control-btns">
-            <button className="btn-refresh-dashboard" onClick={handleSetKey}>Set Key</button>
-            <button className="btn-refresh-dashboard" onClick={handleResetKey}>Reset Key</button>
+            {/* Dynamic Master Key Buttons */}
+            <button className="btn-refresh-dashboard" onClick={handleSetKey}>
+              {masterKeyConfigured ? "Update Key" : "Set Key"}
+            </button>
+            {masterKeyConfigured && (
+              <button className="btn-refresh-dashboard" onClick={handleResetKey}>
+                Reset Key
+              </button>
+            )}
             <button className="btn-refresh-dashboard" onClick={loadSubkeys}>Refresh</button>
             <button className={`btn-toggle ${hideRevoked ? "active" : ""}`} onClick={() => setHideRevoked(!hideRevoked)}>
               {hideRevoked ? "Show All" : "Hide Revoked"}
@@ -187,6 +233,7 @@ function Dashboard({ setToken }) {
                       <button className="btn-revoke-inline" onClick={async () => { if(window.confirm("Revoke key?")) { await fetch(`http://localhost:3000/subkeys/${k.id}/revoke`, { method: "PATCH", headers: { Authorization: `Bearer ${token}` }}); loadSubkeys(); } }}>Revoke</button>
                     </>
                   )}
+                  <button className="btn-revoke-inline" onClick={() => handleDeleteSubkey(k.id)}>Delete</button>
                 </div>
               </div>
             );

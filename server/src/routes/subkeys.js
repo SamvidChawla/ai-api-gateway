@@ -163,6 +163,37 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
+// delete subkey
+router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `DELETE FROM api_keys 
+       WHERE id = $1 AND user_id = $2 
+       RETURNING id`,
+      [id, req.user.userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Subkey not found or already removed" });
+    }
+
+    // log event
+    await pool.query(
+      `INSERT INTO api_key_logs (api_key_id, event_type)
+       VALUES ($1, 'key_deleted')`,
+      [id]
+    );
+
+    res.json({ message: "Subkey removed" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Get all logs for the user’s subkeys
 router.get("/logs", async (req, res) => {
   try {
