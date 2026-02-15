@@ -55,6 +55,47 @@ function Dashboard({ setToken }) {
     } catch (err) { console.error(err); }
   }
 
+  async function handleSetKey() {
+    const apiKey = prompt("Enter your Master Gemini API Key:");
+    if (!apiKey) return;
+
+    try {
+      const res = await fetch("http://localhost:3000/realkey", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ api_key: apiKey }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("Master key successfully saved!");
+      } else {
+        alert(data.error || "Failed to save key.");
+      }
+    } catch (err) { 
+      console.error(err);
+      alert("Server error while saving key."); 
+    }
+  }
+
+  async function handleResetKey() {
+    if (!window.confirm("Are you sure you want to delete your Master Gemini API Key? Your subkeys will stop working until a new one is set.")) return;
+
+    try {
+      const res = await fetch("http://localhost:3000/realkey", {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        alert("Master key successfully removed.");
+      } else {
+        alert("Failed to remove key.");
+      }
+    } catch (err) { 
+      console.error(err);
+      alert("Server error while removing key."); 
+    }
+  }
+
   const formatIST = (date) => new Date(date).toLocaleString("en-IN", {
     timeZone: "Asia/Kolkata", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", hour12: true
   });
@@ -66,7 +107,7 @@ function Dashboard({ setToken }) {
 
   return (
     <div className="dashboard-page">
-      {/* Fancy Creation Section */}
+      {/*Creation Section */}
       <section className="create-card">
         <div className="card-header">
           <h3>Generate New Subkey <span>{subkeys.filter(k=>!k.revoked).length}/10 Active</span></h3>
@@ -104,6 +145,8 @@ function Dashboard({ setToken }) {
         <div className="list-controls">
           <input className="search-input" placeholder="Search by name..." onChange={e => setSearchTerm(e.target.value)} />
           <div className="control-btns">
+            <button className="btn-refresh-dashboard" onClick={handleSetKey}>Set Key</button>
+            <button className="btn-refresh-dashboard" onClick={handleResetKey}>Reset Key</button>
             <button className="btn-refresh-dashboard" onClick={loadSubkeys}>Refresh</button>
             <button className={`btn-toggle ${hideRevoked ? "active" : ""}`} onClick={() => setHideRevoked(!hideRevoked)}>
               {hideRevoked ? "Show All" : "Hide Revoked"}

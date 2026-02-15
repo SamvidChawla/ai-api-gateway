@@ -177,7 +177,7 @@ router.get("/logs", async (req, res) => {
         l.timestamp
       FROM api_key_logs l
       JOIN api_keys k ON l.api_key_id = k.id
-      JOIN users u ON l.performed_by = u.id
+      LEFT JOIN users u ON l.performed_by = u.id
       WHERE k.user_id = $1
       ORDER BY l.timestamp DESC
       `,

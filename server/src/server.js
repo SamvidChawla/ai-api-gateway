@@ -4,6 +4,8 @@ import express from "express";
 import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import subKeys from "./routes/subkeys.js";
+import gateWay from "./routes/gateway.js";
+import realKey from "./routes/realkey.js";
 import cors from "cors";
 
 const app = express();
@@ -14,6 +16,8 @@ app.use(cors({
 app.use(express.json());
 app.use("/auth", authRoutes);
 app.use("/subkeys", subKeys);
+app.use("/realkey",realKey);
+app.use("/gateway",gateWay);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok", time: new Date().toISOString() });
