@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import "./Dashboard.css";
+const API = import.meta.env.VITE_API_URL;
 
 function Dashboard({ setToken }) {
   const [subkeys, setSubkeys] = useState([]);
@@ -15,7 +16,7 @@ function Dashboard({ setToken }) {
 
   const loadSubkeys = useCallback(async () => {
     try {
-      const res = await fetch("http://localhost:3000/subkeys", {
+      const res = await fetch(`${API}/subkeys`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.status === 401) return setToken(null);
@@ -26,7 +27,7 @@ function Dashboard({ setToken }) {
 
   const checkMasterKeyStatus = useCallback(async () => {
     try {
-      const res = await fetch("http://localhost:3000/realkey", {
+      const res = await fetch(`${API}/realkey`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -46,7 +47,7 @@ function Dashboard({ setToken }) {
     setError(""); setNewKey(null);
     if (!name.trim()) return setError("Name is required");
     try {
-      const res = await fetch("http://localhost:3000/subkeys", {
+      const res = await fetch(`${API}/subkeys`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name, token_limit: Number(tokenLimit) }),
@@ -63,7 +64,7 @@ function Dashboard({ setToken }) {
     if (newName === null || newLimit === null) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/subkeys/${id}`, {
+      const res = await fetch(`${API}/subkeys/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name: newName, token_limit: Number(newLimit) }),
@@ -77,7 +78,7 @@ function Dashboard({ setToken }) {
     if (!apiKey) return;
 
     try {
-      const res = await fetch("http://localhost:3000/realkey", {
+      const res = await fetch(`${API}/realkey`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ api_key: apiKey }),
@@ -99,7 +100,7 @@ function Dashboard({ setToken }) {
     if (!window.confirm("Are you sure you want to delete your Master Gemini API Key? Your subkeys will stop working until a new one is set.")) return;
 
     try {
-      const res = await fetch("http://localhost:3000/realkey", {
+      const res = await fetch(`${API}/realkey`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -119,7 +120,7 @@ function Dashboard({ setToken }) {
     if (!window.confirm("Are you sure you want to permanently delete this subkey? This action cannot be undone.")) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/subkeys/${id}`, {
+      const res = await fetch(`${API}/subkeys/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -230,7 +231,7 @@ function Dashboard({ setToken }) {
                   {!k.revoked && (
                     <>
                       <button className="btn-modify-inline" onClick={() => handleModify(k.id, k.name, k.token_limit)}>Modify</button>
-                      <button className="btn-revoke-inline" onClick={async () => { if(window.confirm("Revoke key?")) { await fetch(`http://localhost:3000/subkeys/${k.id}/revoke`, { method: "PATCH", headers: { Authorization: `Bearer ${token}` }}); loadSubkeys(); } }}>Revoke</button>
+                      <button className="btn-revoke-inline" onClick={async () => { if(window.confirm("Revoke key?")) { await fetch(`${API}/subkeys/${k.id}/revoke`, { method: "PATCH", headers: { Authorization: `Bearer ${token}` }}); loadSubkeys(); } }}>Revoke</button>
                     </>
                   )}
                   <button className="btn-revoke-inline" onClick={() => handleDeleteSubkey(k.id)}>Delete</button>

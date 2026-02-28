@@ -18,6 +18,10 @@ function Landing() {
             Signup
           </button>
         </div>
+
+        <p className="landing-disclaimer">
+          ⚠️ Demo project — do not use real or sensitive API keys. Email is not verified.
+        </p>
       </div>
     </div>
   );

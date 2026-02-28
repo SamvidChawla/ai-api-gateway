@@ -31,7 +31,7 @@ function App() {
         {/* Protected Routes */}
         <Route element={token ? <ProtectedLayout setToken={setToken} /> : <Navigate to="/login" />}>
           <Route path="/dashboard" element={<Dashboard setToken={setToken} />} />
-          <Route path="/logs" element={<Log />} />
+          <Route path="/logs" element={<Log setToken={setToken} />} />
           <Route path="/guide" element={<Guide />} />
         </Route>
 

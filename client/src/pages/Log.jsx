@@ -1,21 +1,23 @@
 import React, { useEffect, useState, useCallback } from "react";
 import "./Log.css";
+const API = import.meta.env.VITE_API_URL;
 
-function Log() {
+function Log({ setToken }) {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
 
   const fetchLogs = useCallback(async () => {
     try {
-      const res = await fetch("http://localhost:3000/subkeys/logs", {
+      const res = await fetch(`${API}/subkeys/logs`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (res.status === 401) return setToken(null);
       const data = await res.json();
       setLogs(data);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
-  }, [token]);
+  }, [token, setToken]);
 
   useEffect(() => { fetchLogs(); }, [fetchLogs]);
 

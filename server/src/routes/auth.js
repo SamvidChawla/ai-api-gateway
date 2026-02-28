@@ -13,6 +13,11 @@ router.post("/signup", async (req, res) => {
     return res.status(400).json({ error: "Email and Password Required" });
   }
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: "Invalid email format" });
+  }
+
   try {
     // 2. hash password
     const passwordHash = await bcrypt.hash(password, 10);

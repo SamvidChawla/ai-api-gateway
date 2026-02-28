@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Auth.css";
+const API = import.meta.env.VITE_API_URL;
 
 function Signup() {
   const [email, setEmail] = useState("");
@@ -13,7 +14,7 @@ function Signup() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:3000/auth/signup", {
+      const res = await fetch(`${API}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -26,7 +27,7 @@ function Signup() {
       }
       navigate("/login");
     } catch (err) {
-      setError("Network timeout: Gateway unreachable");
+      setError(err.message);
     }
   };
 

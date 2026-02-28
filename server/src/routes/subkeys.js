@@ -1,7 +1,7 @@
 import express from "express";
 import { requireAuth } from "../middleware/requireAuth.js";
 import pool from "../config/db.js";
-import { generateApiKey, hashApiKey } from "../utils/crypto.js";
+import { generateApiKey, hashApiKey } from "../utils/hash.js";
 
 const router = express.Router();
 router.use(requireAuth);

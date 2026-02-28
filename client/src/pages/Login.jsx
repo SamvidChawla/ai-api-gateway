@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Auth.css";
+const API = import.meta.env.VITE_API_URL;
 
 function Login({ setToken }) {
   const [email, setEmail] = useState("");
@@ -10,7 +11,7 @@ function Login({ setToken }) {
   async function handleLogin(e) {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:3000/auth/login", {
+      const res = await fetch(`${API}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
@@ -25,7 +26,7 @@ function Login({ setToken }) {
         } else {
         alert("Login failed");}
     } catch (err) {
-      alert("System Offline: Check server connection.");
+      alert(err.message);
     }
   }
 

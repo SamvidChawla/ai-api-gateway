@@ -131,6 +131,23 @@ html, body {
 .btn-primary:hover { background: #e6b800; }
 .btn-outline:hover { background: rgba(255, 204, 0, 0.1); }
 
+.landing-disclaimer {
+  margin-top: 24px;
+  font-size: 12px;
+  color: #444;
+  line-height: 1.6;
+}
+
+.disclaimer-link {
+  color: #ffcc00;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.disclaimer-link:hover {
+  color: #fff;
+}
+
 /* Responsive */
 @media (max-width: 480px) {
   .auth-card {
