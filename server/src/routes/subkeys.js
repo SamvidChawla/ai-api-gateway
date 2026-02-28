@@ -168,21 +168,26 @@ router.delete("/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    const result = await pool.query(
-      `DELETE FROM api_keys 
-       WHERE id = $1 AND user_id = $2 
-       RETURNING id`,
+    // 1. Verify ownership
+    const existing = await pool.query(
+      `SELECT id FROM api_keys WHERE id = $1 AND user_id = $2`,
       [id, req.user.userId]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Subkey not found or already removed" });
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ error: "Subkey not found" });
     }
 
-    // log event
+    // 2. Log BEFORE deleting
     await pool.query(
-      `INSERT INTO api_key_logs (api_key_id, event_type)
-       VALUES ($1, 'key_deleted')`,
+      `INSERT INTO api_key_logs (api_key_id, event_type, performed_by)
+       VALUES ($1, 'key_deleted', $2)`,
+      [id, req.user.userId]
+    );
+
+    // 3. SET NULL will null out api_key_id in the log
+    await pool.query(
+      `DELETE FROM api_keys WHERE id = $1`,
       [id]
     );
 
@@ -202,14 +207,14 @@ router.get("/logs", async (req, res) => {
       SELECT 
         l.id,
         l.api_key_id,
-        k.name AS subkey_name,
+        COALESCE(k.name, '[Deleted Key]') AS subkey_name,
         l.event_type,
         u.email AS performed_by_email,
         l.timestamp
       FROM api_key_logs l
-      JOIN api_keys k ON l.api_key_id = k.id
+      LEFT JOIN api_keys k ON l.api_key_id = k.id
       LEFT JOIN users u ON l.performed_by = u.id
-      WHERE k.user_id = $1
+      WHERE k.user_id = $1 OR l.performed_by = $1
       ORDER BY l.timestamp DESC
       `,
       [req.user.userId]

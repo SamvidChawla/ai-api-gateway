@@ -74,6 +74,10 @@
 .tag-created { background: rgba(0, 255, 127, 0.1); color: #00ff7f; }
 .tag-revoked { background: rgba(255, 68, 68, 0.1); color: #ff4444; }
 .tag-updated { background: rgba(0, 123, 255, 0.1); color: #007bff; }
+.tag-request_success { background: rgba(0, 229, 255, 0.1); color: #00e5ff; }
+.tag-request_blocked_limit { background: rgba(255, 204, 0, 0.1); color: #ffcc00; }
+.tag-request_failed { background: rgba(255, 0, 127, 0.1); color: #ff007f; }
+.tag-key_deleted { background: rgba(160, 160, 165, 0.1); color: #a0a0a5; }
 
 @media (max-width: 600px) {
   .log-container { padding: 15px; }

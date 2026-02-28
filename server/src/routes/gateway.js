@@ -8,6 +8,7 @@ const router = express.Router();
 
 router.post("/generate", async (req, res) => {
   const client = await pool.connect();
+  let matchedKey = null;
 
   try {
     // auth
@@ -27,8 +28,6 @@ router.post("/generate", async (req, res) => {
     const keysResult = await client.query(
       `SELECT * FROM api_keys WHERE revoked = false`
     );
-
-    let matchedKey = null;
 
     for (const key of keysResult.rows) {
       const match = await bcrypt.compare(rawKey, key.key_hash);
@@ -70,7 +69,7 @@ router.post("/generate", async (req, res) => {
     );
 
     if (geminiKeyResult.rows.length === 0) {
-      return res.status(400).json({ error: "Gemini key not set" });
+      return res.status(400).json({ error: "No Gemini key configured. Please add your Gemini API key to use this service." });
     }
 
     const decryptedKey = decrypt(geminiKeyResult.rows[0].key_encrypted);
@@ -84,10 +83,16 @@ router.post("/generate", async (req, res) => {
 
     const estimatedTokens = countResponse.totalTokens || 0;
 
+    // exceeded
     if (
       matchedKey.token_limit > 0 &&
       matchedKey.tokens_used + estimatedTokens > matchedKey.token_limit
     ) {
+      await client.query(
+        `INSERT INTO api_key_logs (api_key_id, event_type, performed_by)
+         VALUES ($1, 'request_blocked_limit', $2)`,
+        [matchedKey.id, matchedKey.user_id]
+      );
       return res.status(403).json({
         error: "Token limit exceeded",
         reset_at: matchedKey.reset_at,
@@ -115,40 +120,45 @@ router.post("/generate", async (req, res) => {
 
     const updated = updateResult.rows[0];
 
-    //last overflow
+    // last overflow
     if (
       updated.token_limit > 0 &&
       updated.tokens_used > updated.token_limit
     ) {
       await client.query(
-        `INSERT INTO api_key_logs (api_key_id, event_type)
-        VALUES ($1, 'request_success')`,
-        [matchedKey.id]
+        `INSERT INTO api_key_logs (api_key_id, event_type, performed_by)
+         VALUES ($1, 'request_success', $2)`,
+        [matchedKey.id, matchedKey.user_id]
       );
-      return res.status(403).json({
-        error: "Token limit exceeded , allowing last overflow",
+      return res.status(200).json({
+        warning: "Token limit reached — this is your last response until reset",
+        response,
         reset_at: updated.reset_at,
-        tokensUsed,
-        response
+        tokensUsed
       });
     }
 
-    // logging
+    // success
     await client.query(
-      `INSERT INTO api_key_logs (api_key_id, event_type)
-       VALUES ($1, 'request_success')`,
-      [matchedKey.id]
+      `INSERT INTO api_key_logs (api_key_id, event_type, performed_by)
+       VALUES ($1, 'request_success', $2)`,
+      [matchedKey.id, matchedKey.user_id]
     );
-
-    // response
     res.json({
-      result: response,
-      tokens_used: tokensUsed,
-      total_used: updateResult.rows[0].tokens_used,
-      reset_at: updateResult.rows[0].reset_at
+      response,
+      tokensUsed,
+      total_used: updated.tokens_used,
+      reset_at: updated.reset_at
     });
 
   } catch (err) {
+    if (matchedKey) {
+      await client.query(
+        `INSERT INTO api_key_logs (api_key_id, event_type, performed_by)
+         VALUES ($1, 'request_failed', $2)`,
+        [matchedKey.id, matchedKey.user_id]
+      );
+    }
     console.error(err);
     res.status(500).json({ error: err.message });
   } finally {
