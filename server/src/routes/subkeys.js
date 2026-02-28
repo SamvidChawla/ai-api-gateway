@@ -28,6 +28,7 @@ router.post("/", async (req, res) => {
     }
 
     const rawKey = generateApiKey();
+    const keyPrefix = rawKey.substring(0, 8);
     const keyHash = await hashApiKey(rawKey);
 
     const resetAt = new Date();
@@ -35,12 +36,13 @@ router.post("/", async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO api_keys
-       (user_id, key_hash, name, token_limit, tokens_used, usage_count, reset_at)
-       VALUES ($1, $2, $3, $4, 0, 0, $5)
+       (user_id, key_hash, key_prefix, name, token_limit, tokens_used, usage_count, reset_at)
+       VALUES ($1, $2, $3, $4, $5, 0, 0, $6)
        RETURNING id, name, token_limit, tokens_used, usage_count, reset_at, revoked, created_at`,
       [
         req.user.userId,
         keyHash,
+        keyPrefix,
         name || null,
         token_limit ?? 0,
         resetAt

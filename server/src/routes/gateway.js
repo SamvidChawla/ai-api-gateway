@@ -11,7 +11,6 @@ router.post("/generate", async (req, res) => {
   let matchedKey = null;
 
   try {
-    // auth
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -25,8 +24,11 @@ router.post("/generate", async (req, res) => {
     const rawKey = authHeader.split(" ")[1];
 
     // key lookup
+    const keyPrefix = rawKey.substring(0, 8);
+
     const keysResult = await client.query(
-      `SELECT * FROM api_keys WHERE revoked = false`
+      `SELECT * FROM api_keys WHERE key_prefix = $1 AND revoked = false`,
+      [keyPrefix]
     );
 
     for (const key of keysResult.rows) {
