@@ -14,6 +14,7 @@ function Log({ setToken }) {
       });
       if (res.status === 401) return setToken(null);
       const data = await res.json();
+      if (!res.ok) return;
       setLogs(data);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }

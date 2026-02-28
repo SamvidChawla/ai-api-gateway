@@ -20,6 +20,7 @@ function Dashboard({ setToken }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.status === 401) return setToken(null);
+      if (!res.ok) return;
       const data = await res.json();
       setSubkeys(data);
     } catch (err) { console.error(err); }
@@ -159,7 +160,7 @@ function Dashboard({ setToken }) {
           </div>
           <div className="input-box">
             <label>Token Limit (0 for unlimited)</label>
-            <input type="number" value={tokenLimit} onChange={e => setTokenLimit(e.target.value)} />
+            <input type="number" min="0" step="1" value={tokenLimit} onChange={e => setTokenLimit(e.target.value)} />
           </div>
           <button className="btn-create" onClick={createSubkey} disabled={subkeys.filter(k=>!k.revoked).length >= 10}>
             Create Key

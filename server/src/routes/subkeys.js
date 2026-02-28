@@ -10,8 +10,12 @@ router.use(requireAuth);
 router.post("/", async (req, res) => {
   const { name, token_limit } = req.body;
 
+  if(!name || name.length>100 || name.length < 1){
+    return res.status(400).json({ error: "Name must 1 to 100 Characters Long" });
+  }
+
   if (token_limit !== undefined) {
-    if (typeof token_limit !== "number" || token_limit < 0) {
+    if (typeof token_limit !== "number" || token_limit < 0 || !Number.isInteger(token_limit)) {
       return res.status(400).json({ error: "Invalid token_limit" });
     }
   }
@@ -43,7 +47,7 @@ router.post("/", async (req, res) => {
         req.user.userId,
         keyHash,
         keyPrefix,
-        name || null,
+        name,
         token_limit ?? 0,
         resetAt
       ]
@@ -121,8 +125,12 @@ router.patch("/:id", async (req, res) => {
   const { id } = req.params;
   const { name, token_limit } = req.body;
 
+  if(!name || name.length>100 || name.length < 1){
+    return res.status(400).json({ error: "Name must 1 to 100 Characters Long" });
+  }
+
   if (token_limit !== undefined) {
-    if (typeof token_limit !== "number" || token_limit < 0) {
+    if (typeof token_limit !== "number" || token_limit < 0 || !Number.isInteger(token_limit)) {
       return res.status(400).json({ error: "Invalid token_limit" });
     }
   }

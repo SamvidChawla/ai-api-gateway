@@ -18,6 +18,10 @@ router.post("/signup", async (req, res) => {
     return res.status(400).json({ error: "Invalid email format" });
   }
 
+  if(password.length < 8){
+    return res.status(400).json({ error: "Password must be atleast 8 Characters Long" });
+  }
+
   try {
     // 2. hash password
     const passwordHash = await bcrypt.hash(password, 10);
