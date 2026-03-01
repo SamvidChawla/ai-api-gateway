@@ -21,6 +21,7 @@ function Landing() {
 
         <p className="landing-disclaimer">
           ⚠️ Demo project — do not use real or sensitive API keys. Email is not verified.
+          Please read Docs upon signing up before using the app.
         </p>
       </div>
     </div>

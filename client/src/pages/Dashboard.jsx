@@ -195,8 +195,7 @@ function Dashboard({ setToken }) {
       }
     } catch (err) {
       showToast("Server error while revoking subkey", "error");
-    } finally {
-      await new Promise(r => setTimeout(r, 5000));    
+    } finally {    
       setRevokingId(null);
     }
   }

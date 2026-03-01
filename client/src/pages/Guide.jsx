@@ -64,7 +64,7 @@ function Guide() {
         <div className="guide-hero-label">DOCUMENTATION</div>
         <h1 className="guide-hero-title">How It Works</h1>
         <p className="guide-hero-sub">
-          A platform for managing and distributing Gemini API access via scoped subkeys — without ever exposing your master key.
+          A platform for managing and distributing AI API access via scoped subkeys — without ever exposing your master key.
         </p>
       </section>
 
@@ -78,6 +78,10 @@ function Guide() {
             While reasonable security practices have been implemented (AES-256 encrypted API keys, bcrypt hashed passwords, JWT auth),
             no guarantees are made regarding data security. Do not store real or sensitive Gemini API keys.
             By using this platform you acknowledge it is a demo project.
+
+            This platform does not provide Gemini API access.
+            Users must supply their own Google Gemini API key and are solely responsible for compliance with
+            Google's Gemini API Terms of Service and Google APIs Terms of Service.
           </p>
         </div>
       </section>
@@ -87,7 +91,7 @@ function Guide() {
         <h2 className="guide-section-title">Use Case</h2>
         <div className="guide-usecase-card">
           <p>
-            You have one Gemini API key and need to give access to two interns, a frontend app, and a backend service —
+            You have one AI API key and need to give access to two interns, a frontend app, and a backend service —
             but you don't want to expose your master key. Create four named subkeys, set token limits on each,
             and hand them out. Monitor usage and revoke access instantly without touching your real key.
           </p>
