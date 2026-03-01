@@ -2,7 +2,7 @@
 
 A PERN stack platform for managing and distributing AI API access via scoped subkeys — without exposing your master key.
 
-**Live:** [frontend-url] · [backend-url/health]
+**Live:** [https://ai-api-gateway.netlify.app/] · [https://ai-api-gateway.onrender.com/health]
 
 ---
 
