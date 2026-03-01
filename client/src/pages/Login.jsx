@@ -6,10 +6,18 @@ const API = import.meta.env.VITE_API_URL;
 function Login({ setToken }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   async function handleLogin(e) {
     e.preventDefault();
+    setError("");
+
+    if (!email.trim()) return setError("Email is required");
+    if (!password) return setError("Password is required");
+
+    setLoading(true); 
     try {
       const res = await fetch(`${API}/auth/login`, {
         method: "POST",
@@ -23,10 +31,13 @@ function Login({ setToken }) {
         localStorage.setItem("token", data.token);
         setToken(data.token);        
         navigate("/dashboard");
-        } else {
-        alert("Login failed");}
+      } else {
+        setError(data.error || "Login failed");
+      }
     } catch (err) {
-      alert(err.message);
+      setError("Server error");
+    } finally {
+      setLoading(false); 
     }
   }
 
@@ -44,7 +55,6 @@ function Login({ setToken }) {
             onChange={e => setEmail(e.target.value)}
             required
           />
-
           <input
             placeholder="Password"
             type="password"
@@ -52,11 +62,9 @@ function Login({ setToken }) {
             onChange={e => setPassword(e.target.value)}
             required
           />
-
-          <button className="btn-primary" type="submit">
-            Login
-          </button>
+          <button className="btn-primary" disabled={loading} type="submit">{loading ? "Logging in..." : "Log in"}</button>
         </form>
+        {error && <p style={{ color: '#ff4444', fontSize: '13px', marginTop: '10px' }}>{error}</p>}
       </div>
     </div>
   );

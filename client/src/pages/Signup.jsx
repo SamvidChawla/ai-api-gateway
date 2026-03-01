@@ -7,12 +7,21 @@ function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [creating, setCreating] = useState(false);
   const navigate = useNavigate();
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const handleSignup = async (e) => {
     e.preventDefault();
     setError("");
 
+    if (!email.trim()) return setError("Email is required");
+    if (!emailRegex.test(email)) return setError("Invalid email format");
+    if (!password) return setError("Password is required");
+    if (password.length < 8) return setError("Password must be at least 8 characters long");
+
+    setCreating(true); 
     try {
       const res = await fetch(`${API}/auth/signup`, {
         method: "POST",
@@ -22,12 +31,14 @@ function Signup() {
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || "Provisioning failed");
+        setError(data.error || "Signup failed");
         return;
       }
       navigate("/login");
     } catch (err) {
-      setError(err.message);
+      setError("Server error");
+    } finally {
+      setCreating(false); 
     }
   };
 
@@ -52,9 +63,7 @@ function Signup() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <button className="btn-primary" type="submit">
-            Signup
-          </button>
+          <button className="btn-primary" disabled={creating} type="submit">{creating ? "Signing up..." : "Sign up"}</button>
         </form>
         {error && <p style={{ color: '#ff4444', fontSize: '13px', marginTop: '10px' }}>{error}</p>}
       </div>

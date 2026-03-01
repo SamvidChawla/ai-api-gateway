@@ -17,7 +17,7 @@ function Navbar({ setToken }) {
   const navLinks = [
     { name: "Dashboard", path: "/dashboard", icon: "🔑" },
     { name: "Activity Logs", path: "/logs", icon: "📋" },
-    { name: "Guide", path: "/guide", icon: "📖" },
+    { name: "Docs", path: "/guide", icon: "📖" },
   ];
 
   return (

@@ -75,7 +75,7 @@ router.get("/", async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT id, name, token_limit, tokens_used, usage_count,
-              reset_at, revoked, created_at, revoked_at
+       reset_at, revoked, created_at, revoked_at
        FROM api_keys
        WHERE user_id = $1`,
       [req.user.userId]

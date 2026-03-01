@@ -5,18 +5,21 @@ const API = import.meta.env.VITE_API_URL;
 function Log({ setToken }) {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const token = localStorage.getItem("token");
 
   const fetchLogs = useCallback(async () => {
+    setError(false);
     try {
       const res = await fetch(`${API}/subkeys/logs`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.status === 401) return setToken(null);
+      if (!res.ok) return setError(true);
       const data = await res.json();
       if (!res.ok) return;
       setLogs(data);
-    } catch (err) { console.error(err); }
+    } catch (err) { console.error(err); setError(true);  }
     finally { setLoading(false); }
   }, [token, setToken]);
 
@@ -33,7 +36,11 @@ function Log({ setToken }) {
         <button className="btn-refresh" onClick={() => { setLoading(true); fetchLogs(); }}>Refresh</button>
       </div>
       <div className="log-card">
-        {loading ? <p style={{color: '#a0a0a5'}}>Syncing audit trail...</p> : (
+        {loading ? (
+            <p style={{color: '#a0a0a5'}}> Syncing audit trail...</p>
+          ) : error ? (
+            <p style={{color: '#ff4444'}}> Failed to load logs. Try refreshing.</p>
+          ) : (
           <div className="log-table-wrapper">
             <table className="log-table">
               <thead>
@@ -45,7 +52,13 @@ function Log({ setToken }) {
                 </tr>
               </thead>
               <tbody>
-                {logs.map(l => (
+                {logs.length === 0 ? (
+                    <tr>
+                      <td colSpan="4" style={{ textAlign: "center", padding: "60px 20px", color: "#444" }}>
+                        No logs yet. Activity will appear here after you use your subkeys.
+                      </td>
+                    </tr>
+                  ) :logs.map(l => (
                   <tr key={l.id}>
                     <td><span className={`event-tag tag-${l.event_type}`}>{l.event_type}</span></td>
                     <td>{l.subkey_name}</td>
