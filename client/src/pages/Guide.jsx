@@ -38,12 +38,12 @@ const events = [
   { type: "request_failed", desc: "Gateway request encountered an error" },
 ];
 
-const curlExample = `curl -X POST https://your-backend/gateway/generate \\
+const curlExample = `curl -X POST https://ai-api-gateway.onrender.com/gateway/generate \\
   -H "Authorization: Bearer YOUR_SUBKEY" \\
   -H "Content-Type: application/json" \\
   -d '{"prompt": "Explain quantum computing in simple terms"}'`;
 
-const jsExample = `const res = await fetch("https://your-backend/gateway/generate", {
+const jsExample = `const res = await fetch("https://ai-api-gateway.onrender.com/gateway/generate", {
   method: "POST",
   headers: {
     "Authorization": "Bearer YOUR_SUBKEY",
