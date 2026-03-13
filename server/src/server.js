@@ -10,6 +10,8 @@ import cors from "cors";
 import helmet from 'helmet';
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
+import { RedisStore } from 'rate-limit-redis';
+import redisClient from './config/redis.js';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -23,11 +25,14 @@ app.use(morgan('dev'));
 app.use(helmet()); 
 
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 250, 
+  windowMs: 15 * 60 * 1000,
+  max: 250,
   message: { error: "Too many requests, please try again later." },
   standardHeaders: true,
   legacyHeaders: false,
+  store: new RedisStore({
+    sendCommand: (...args) => redisClient.sendCommand(args),
+  }),
 });
 app.use(limiter);
 
@@ -38,9 +43,12 @@ app.use("/subkeys", subKeys);
 app.use("/realkey",realKey);
 
 const gatewayLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 20, 
+  windowMs: 60 * 1000,
+  max: 20,
   message: { error: "Gateway rate limit exceeded." },
+  store: new RedisStore({
+    sendCommand: (...args) => redisClient.sendCommand(args),
+  }),
 });
 app.use("/gateway", gatewayLimiter, gateWay);
 
