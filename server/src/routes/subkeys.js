@@ -32,7 +32,7 @@ router.post("/", async (req, res) => {
     }
 
     const rawKey = generateApiKey();
-    const keyPrefix = rawKey.substring(0, 8);
+    const keyPrefix = rawKey.substring(0, 16);
     const keyHash = await hashApiKey(rawKey);
 
     const resetAt = new Date();
