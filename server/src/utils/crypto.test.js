@@ -1,8 +1,8 @@
 process.env.ENCRYPTION_SECRET = "test_secret_for_jest_do_not_use_in_prod";
 
-import { encrypt, decrypt } from "./encryption.js";
-import { generateApiKey, hashApiKey } from "./hash.js";
-import bcrypt from "bcrypt";
+const { encrypt, decrypt } = await import("./encryption.js");
+const { generateApiKey, hashApiKey } = await import("./hash.js");
+const bcrypt = (await import("bcrypt")).default;
 
 describe("encryption.js", () => {
   test("round trip: encrypt then decrypt returns original text", () => {
