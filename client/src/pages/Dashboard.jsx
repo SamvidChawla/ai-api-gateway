@@ -37,7 +37,7 @@ function Dashboard({ setToken }) {
       if (!res.ok) return setLoadError(true);
       const data = await res.json();
       setSubkeys(data);
-    } catch (_err) { 
+    } catch (err) { 
       console.error(err);
       setLoadError(true);
     }
