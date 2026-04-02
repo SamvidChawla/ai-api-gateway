@@ -34,7 +34,7 @@ function Login({ setToken }) {
       } else {
         setError(data.error || "Login failed");
       }
-    } catch (err) {
+    } catch (_err) {
       setError("Server error");
     } finally {
       setLoading(false); 

@@ -19,7 +19,7 @@ function Log({ setToken }) {
       const data = await res.json();
       if (!res.ok) return;
       setLogs(data);
-    } catch (err) { console.error(err); setError(true);  }
+    } catch (_err) { setError(true);  }
     finally { setLoading(false); }
   }, [token, setToken]);
 

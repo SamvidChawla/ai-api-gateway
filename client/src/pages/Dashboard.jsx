@@ -37,7 +37,7 @@ function Dashboard({ setToken }) {
       if (!res.ok) return setLoadError(true);
       const data = await res.json();
       setSubkeys(data);
-    } catch (err) { 
+    } catch (_err) { 
       console.error(err);
       setLoadError(true);
     }
@@ -76,7 +76,7 @@ function Dashboard({ setToken }) {
       const data = await res.json();
       if (!res.ok) return setError(data.error);
       setNewKey(data.subkey); setName(""); setTokenLimit(0); loadSubkeys();
-    } catch (err) { 
+    } catch (_err) { 
       setError("Server error"); 
     } finally { 
       setCreating(false); 
@@ -104,7 +104,7 @@ function Dashboard({ setToken }) {
       } else {
         showToast(data.error, "error");
       }
-    } catch (err) { 
+    } catch (_err) { 
       showToast("Server error while updating subkey", "error");
     } finally {
       setModifyingId(null);
@@ -129,7 +129,7 @@ function Dashboard({ setToken }) {
       } else {
         showToast(data.error, "error");
       }
-    } catch (err) { 
+    } catch (_err) { 
       showToast("Server error while saving key", "error"); 
     }
   }
@@ -149,7 +149,7 @@ function Dashboard({ setToken }) {
       } else {
         showToast(data.error, "error");
       }
-    } catch (err) { 
+    } catch (_err) { 
       showToast("Server error while removing key", "error"); 
     }
   }
@@ -170,7 +170,7 @@ function Dashboard({ setToken }) {
         const data = await res.json();
         showToast(data.error, "error");
       }
-    } catch (err) { 
+    } catch (_err) { 
       showToast("Server error while deleting subkey", "error"); 
     } finally {
       setDeletingId(null);
@@ -193,7 +193,7 @@ function Dashboard({ setToken }) {
         const data = await res.json(); 
         showToast(data.error, "error"); 
       }
-    } catch (err) {
+    } catch (_err) {
       showToast("Server error while revoking subkey", "error");
     } finally {    
       setRevokingId(null);

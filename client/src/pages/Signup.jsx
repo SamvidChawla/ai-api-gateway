@@ -35,7 +35,7 @@ function Signup() {
         return;
       }
       navigate("/login");
-    } catch (err) {
+    } catch (_err) {
       setError("Server error");
     } finally {
       setCreating(false); 
