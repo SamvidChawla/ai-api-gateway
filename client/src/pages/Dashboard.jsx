@@ -112,45 +112,70 @@ function Dashboard({ setToken }) {
   }
 
   async function handleSetKey() {
-    const apiKey = prompt("Enter your Master Gemini API Key:");
+    const provider = prompt("Enter provider (gemini/openai):");
+    if (!provider) return;
+
+    const normalizedProvider = provider.toLowerCase();
+
+    if (!["gemini", "openai"].includes(normalizedProvider)) {
+      return showToast("Provider not supported", "error");
+    }
+
+    const apiKey = prompt(`Enter your ${normalizedProvider} API Key:`);
     if (!apiKey) return;
     if (!apiKey.trim()) return showToast("API key cannot be empty", "error");
 
     try {
       const res = await fetch(`${API}/realkey`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ api_key: apiKey }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          api_key: apiKey,
+          provider: normalizedProvider,
+        }),
       });
+
       const data = await res.json();
+
       if (res.ok) {
-        showToast("Master key saved successfully");
+        showToast("Provider key saved successfully");
         setMasterKeyConfigured(true);
       } else {
         showToast(data.error, "error");
       }
-    } catch (_err) { 
-      showToast("Server error while saving key", "error"); 
+    } catch (_err) {
+      showToast("Server error while saving key", "error");
     }
   }
 
   async function handleResetKey() {
-    if (!window.confirm("Are you sure you want to delete your Master Gemini API Key? Your subkeys will stop working until a new one is set.")) return;
+    if (
+      !window.confirm(
+        "Are you sure you want to delete your provider API key? Your subkeys will stop working until a new one is set."
+      )
+    ) return;
 
     try {
       const res = await fetch(`${API}/realkey`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
+
       const data = await res.json();
+
       if (res.ok) {
-        showToast("Master key removed");
+        showToast("Provider key removed");
         setMasterKeyConfigured(false);
       } else {
         showToast(data.error, "error");
       }
-    } catch (_err) { 
-      showToast("Server error while removing key", "error"); 
+    } catch (_err) {
+      showToast("Server error while removing key", "error");
     }
   }
 
