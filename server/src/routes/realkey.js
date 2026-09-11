@@ -7,10 +7,16 @@ const router = express.Router();
 router.use(requireAuth);
 
 router.post("/", async (req, res) => {
-  const { api_key } = req.body;
+  const { api_key , provider } = req.body;
 
   if (!api_key || typeof api_key !== "string") {
     return res.status(400).json({ error: "Invalid API key" });
+  }
+
+  const normalizedProvider = provider.toLowerCase();
+
+  if (!normalizedProvider || !["gemini", "openai"].includes(normalizedProvider)) {
+    return res.status(400).json({ error: "Provider not supported" });
   }
 
   try {
@@ -18,16 +24,17 @@ router.post("/", async (req, res) => {
     const encryptedKey = encrypt(trimmedKey);
 
     await pool.query(
-      `INSERT INTO gemini_keys (user_id, key_encrypted)
-       VALUES ($1, $2)
+      `INSERT INTO provider_keys (user_id, key_encrypted , provider)
+       VALUES ($1, $2, $3)
        ON CONFLICT (user_id)
        DO UPDATE SET
          key_encrypted = EXCLUDED.key_encrypted,
+         provider = EXCLUDED.provider,
          updated_at = NOW()`,
-      [req.user.userId, encryptedKey]
+      [req.user.userId, encryptedKey, provider]
     );
 
-    res.json({ message: "Gemini key saved" });
+    res.json({ message: "Provider key saved" });
 
   } catch (err) {
     console.error(err);
@@ -39,7 +46,7 @@ router.get("/", async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT created_at, updated_at
-       FROM gemini_keys
+       FROM provider_keys
        WHERE user_id = $1`,
       [req.user.userId]
     );
@@ -63,11 +70,11 @@ router.get("/", async (req, res) => {
 router.delete("/", async (req, res) => {
   try {
     await pool.query(
-      `DELETE FROM gemini_keys WHERE user_id = $1`,
+      `DELETE FROM provider_keys WHERE user_id = $1`,
       [req.user.userId]
     );
 
-    res.json({ message: "Gemini key removed" });
+    res.json({ message: "Provider key removed" });
 
   } catch (err) {
     console.error(err);
