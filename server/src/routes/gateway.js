@@ -1,6 +1,7 @@
 import express from "express";
 import pool from "../config/db.js";
 import bcrypt from "bcrypt";
+import OpenAI from "openai";
 import { GoogleGenAI } from "@google/genai";
 import { decrypt } from "../utils/encryption.js";
 
@@ -22,17 +23,17 @@ router.post("/generate", async (req, res) => {
     }
 
     const rawKey = authHeader.split(" ")[1];
-
-    // key lookup
     const keyPrefix = rawKey.substring(0, 16);
 
     const keysResult = await client.query(
-      `SELECT * FROM api_keys WHERE key_prefix = $1 AND revoked = false`,
+      `SELECT * FROM api_keys
+       WHERE key_prefix = $1 AND revoked = false`,
       [keyPrefix]
     );
 
     for (const key of keysResult.rows) {
       const match = await bcrypt.compare(rawKey, key.key_hash);
+
       if (match) {
         matchedKey = key;
         break;
@@ -43,7 +44,7 @@ router.post("/generate", async (req, res) => {
       return res.status(401).json({ error: "Invalid API key" });
     }
 
-    // reset check
+    // Reset
     const now = new Date();
 
     if (matchedKey.reset_at && now > matchedKey.reset_at) {
@@ -64,53 +65,112 @@ router.post("/generate", async (req, res) => {
       matchedKey.reset_at = newReset;
     }
 
-    // gemini key
-    const geminiKeyResult = await client.query(
-      `SELECT key_encrypted FROM gemini_keys WHERE user_id = $1`,
+    // Provider key
+    const providerKeyResult = await client.query(
+      `SELECT provider, key_encrypted
+       FROM provider_keys
+       WHERE user_id = $1`,
       [matchedKey.user_id]
     );
 
-    if (geminiKeyResult.rows.length === 0) {
-      return res.status(400).json({ error: "No Gemini key configured. Please add your Gemini API key to use this service." });
-    }
-
-    const decryptedKey = decrypt(geminiKeyResult.rows[0].key_encrypted);
-    const ai = new GoogleGenAI({ apiKey: decryptedKey });
-
-    // pre-count
-    const countResponse = await ai.models.countTokens({
-      model: "gemini-3-flash-preview",
-      contents: req.body.prompt
-    });
-
-    const estimatedTokens = countResponse.totalTokens || 0;
-
-    // exceeded
-    if (
-      matchedKey.token_limit > 0 &&
-      matchedKey.tokens_used + estimatedTokens > matchedKey.token_limit
-    ) {
-      await client.query(
-        `INSERT INTO api_key_logs (api_key_id, event_type, performed_by)
-         VALUES ($1, 'request_blocked_limit', $2)`,
-        [matchedKey.id, matchedKey.user_id]
-      );
-      return res.status(403).json({
-        error: "Token limit exceeded",
-        reset_at: matchedKey.reset_at,
-        estimatedTokens
+    if (providerKeyResult.rows.length === 0) {
+      return res.status(400).json({
+        error: "No provider key configured. Please add your AI provider API key."
       });
     }
 
-    // generate
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: req.body.prompt
-    });
+    const { provider, key_encrypted } = providerKeyResult.rows[0];
+    const decryptedKey = decrypt(key_encrypted);
 
-    const tokensUsed = response.usageMetadata?.totalTokenCount || estimatedTokens;
+    let response;
+    let estimatedTokens = 0;
+    let tokensUsed = 0;
 
-    // update usage
+    // Gemini
+    if (provider === "gemini") {
+      const ai = new GoogleGenAI({
+        apiKey: decryptedKey
+      });
+
+      const countResponse = await ai.models.countTokens({
+        model: "gemini-3.5-flash-lite",
+        contents: req.body.prompt
+      });
+
+      estimatedTokens = countResponse.totalTokens || 0;
+
+      if (
+        matchedKey.token_limit > 0 &&
+        matchedKey.tokens_used + estimatedTokens > matchedKey.token_limit
+      ) {
+        await client.query(
+          `INSERT INTO api_key_logs (api_key_id, event_type, performed_by)
+           VALUES ($1, 'request_blocked_limit', $2)`,
+          [matchedKey.id, matchedKey.user_id]
+        );
+
+        return res.status(403).json({
+          error: "Token limit exceeded",
+          reset_at: matchedKey.reset_at,
+          estimatedTokens
+        });
+      }
+
+      response = await ai.models.generateContent({
+        model: "gemini-2.5-flash-lite",
+        contents: req.body.prompt
+      });
+
+      tokensUsed =
+        response.usageMetadata?.totalTokenCount || estimatedTokens;
+    }
+
+    // OpenAI
+    else if (provider === "openai") {
+      const openai = new OpenAI({
+        apiKey: decryptedKey
+      });
+
+      const countResponse = await openai.responses.inputTokens.count({
+        model: "gpt-5.6-luna",
+        input: req.body.prompt
+      });
+
+      estimatedTokens = countResponse.input_tokens || 0;
+
+      if (
+        matchedKey.token_limit > 0 &&
+        matchedKey.tokens_used + estimatedTokens > matchedKey.token_limit
+      ) {
+        await client.query(
+          `INSERT INTO api_key_logs (api_key_id, event_type, performed_by)
+           VALUES ($1, 'request_blocked_limit', $2)`,
+          [matchedKey.id, matchedKey.user_id]
+        );
+
+        return res.status(403).json({
+          error: "Token limit exceeded",
+          reset_at: matchedKey.reset_at,
+          estimatedTokens
+        });
+      }
+
+      response = await openai.responses.create({
+        model: "gpt-5.6-luna",
+        input: req.body.prompt
+      });
+
+      tokensUsed =
+        response.usage?.total_tokens || estimatedTokens;
+    }
+
+    else {
+      return res.status(400).json({
+        error: "Unsupported provider"
+      });
+    }
+
+    // Update usage
     const updateResult = await client.query(
       `UPDATE api_keys
        SET tokens_used = tokens_used + $1,
@@ -122,7 +182,7 @@ router.post("/generate", async (req, res) => {
 
     const updated = updateResult.rows[0];
 
-    // last overflow
+    // Last overflow
     if (
       updated.token_limit > 0 &&
       updated.tokens_used > updated.token_limit
@@ -132,27 +192,29 @@ router.post("/generate", async (req, res) => {
          VALUES ($1, 'request_success', $2)`,
         [matchedKey.id, matchedKey.user_id]
       );
+
       return res.status(200).json({
-        warning: "Token limit reached — this is your last response until reset",
+        warning:
+          "Token limit reached — this is your last response until reset",
         response,
         reset_at: updated.reset_at,
         tokensUsed
       });
     }
 
-    // success
+    // Success
     await client.query(
       `INSERT INTO api_key_logs (api_key_id, event_type, performed_by)
        VALUES ($1, 'request_success', $2)`,
       [matchedKey.id, matchedKey.user_id]
     );
+
     res.json({
       response,
       tokensUsed,
       total_used: updated.tokens_used,
       reset_at: updated.reset_at
     });
-
   } catch (err) {
     if (matchedKey) {
       await client.query(
@@ -161,8 +223,12 @@ router.post("/generate", async (req, res) => {
         [matchedKey.id, matchedKey.user_id]
       );
     }
+
     console.error(err);
-    res.status(500).json({ error: err.message });
+
+    res.status(500).json({
+      error: err.message
+    });
   } finally {
     client.release();
   }
